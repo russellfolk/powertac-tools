@@ -35,3 +35,6 @@ cobertura.ser
 
 # Other?
 python-scripts/MainWindows.py
+
+# Input files
+logtool-examples/games
