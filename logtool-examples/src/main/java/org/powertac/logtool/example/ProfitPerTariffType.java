@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.powertac.common.Broker;
+import org.powertac.common.CustomerInfo;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.enumerations.PowerType;
 import org.powertac.common.msg.TimeslotUpdate;
@@ -89,6 +90,9 @@ public class ProfitPerTariffType
     private ArrayList<TariffTransaction> ttx;
     private HashMap<Broker, HashMap<PowerType, StatsTracked>> stats;
 
+    // customer count by powertype
+    private HashMap<PowerType, Integer> customerByType;
+
     private ArrayList<PowerType> powerTypes;
 
     // output array, indexed by timeslot
@@ -147,6 +151,8 @@ public class ProfitPerTariffType
                 TimeslotUpdate.class);
         dor.registerNewObjectListener(new TariffTxHandler(),
                 TariffTransaction.class);
+        dor.registerNewObjectListener(new CustomerInfoHandler(), CustomerInfo.class);
+
         try {
             data = new PrintWriter(new File(dataFilename));
         }
@@ -155,7 +161,9 @@ public class ProfitPerTariffType
         }
 
         powerTypes = preparePowerTypes();
-
+        customerByType = new HashMap<>();
+        for (PowerType type : powerTypes)
+            customerByType.put(type, 0);
     }
 
     @Override
@@ -174,6 +182,15 @@ public class ProfitPerTariffType
                 }
             }
         }
+
+        for (PowerType type : powerTypes)
+        {
+            data.print(type + ",");
+            int customerCount = customerByType.get(type);
+            data.print(customerCount + ",");
+            data.println(",,");
+        }
+
         data.close();
     }
 
@@ -208,6 +225,9 @@ public class ProfitPerTariffType
                     stats.put(broker, map);
                 }
             }
+
+            // store customer statistics
+
         }
 
         if (ttx.size() > 0) {
@@ -262,6 +282,19 @@ public class ProfitPerTariffType
         }
     }
 
+    private class CustomerInfoHandler implements NewObjectListener
+    {
+        @Override
+        public void handleNewObject (Object thing)
+        {
+            CustomerInfo ci = (CustomerInfo) thing;
+            PowerType pt = ci.getPowerType();
+            int cc = ci.getPopulation() + customerByType.get(pt);
+            customerByType.put(pt, cc);
+            System.out.println("Processing: " + ci.getId() + "--" + ci + " power " + pt + " count " + cc);
+        }
+    }
+
     private ArrayList<PowerType> preparePowerTypes()
     {
         ArrayList<PowerType> types = new ArrayList<>();
@@ -280,4 +313,5 @@ public class ProfitPerTariffType
         types.add(PowerType.WIND_PRODUCTION);
         return types;
     }
+
 }
