@@ -173,14 +173,14 @@ public class TariffFeatures
         data.println();
         data.print("\tSignup Bonus: ");
         if (spec.getSignupPayment() != 0.0)
-            data.println(spec.getSignupPayment());
+            data.println("€" + spec.getSignupPayment());
         else
             data.println("No");
         data.println();
         data.print("\tEarly withdrawal fee: ");
         if (spec.getEarlyWithdrawPayment() != 0.0)
         {
-            data.println(spec.getEarlyWithdrawPayment());
+            data.print("€" + -spec.getEarlyWithdrawPayment());
             data.println();
             data.println("Minimum time: " + spec.getMinDuration());
         }
@@ -189,7 +189,7 @@ public class TariffFeatures
         data.println();
         data.print("\tPeriodic Payment: ");
         if (spec.getPeriodicPayment() != 0.0)
-            data.println(spec.getPeriodicPayment());
+            data.println("€" + (spec.getPeriodicPayment() * -100));
         else
             data.println("No");
         data.println();
@@ -204,9 +204,15 @@ public class TariffFeatures
             {
                 data.println("Time Variable Rate");
                 data.println();
-                data.println("\t\tBegins: " + rate.getWeeklyBegin() + " @ " + rate.getDailyBegin());
+                data.print("\t\tBegins: ");
+                if (rate.getWeeklyBegin() > -1 || rate.getWeeklyEnd() > -1)
+                    data.print(rate.getWeeklyBegin() + " @ ");
+                data.println(rate.getDailyBegin() + ":00");
                 data.println();
-                data.println("\t\tEnds: " + rate.getWeeklyEnd() + " @ " + rate.getDailyEnd());
+                data.print("\t\tEnds: ");
+                if (rate.getWeeklyBegin() > -1 || rate.getWeeklyEnd() > -1)
+                    data.print(rate.getWeeklyEnd() + " @ ");
+                data.println(rate.getDailyEnd() + ":00");
             }
             else
                 data.println("All-Day / Every-Day Rate");
@@ -216,19 +222,24 @@ public class TariffFeatures
             {
                 data.println("\t\tVariable Cost");
                 data.println();
-                data.println("\t\tMinimum: " + rate.getMinValue());
+                data.println("\t\tMinimum: €" + (rate.getMinValue() * -100));
                 data.println();
-                data.println("\t\tMaximum: " + rate.getMaxValue());
+                data.println("\t\tMaximum: €" + (rate.getMaxValue() * -100));
                 data.println();
-                data.println("\t\tExpected: " + rate.getExpectedMean());
+                data.println("\t\tExpected: €" + (rate.getExpectedMean() * -100));
             }
             else
-                data.println("\t\tCost: " + rate.getValue());
+                data.println("\t\tCost: €" + (rate.getValue() * -100));
             data.println();
-            data.println("\t\tTiered Threshold: " + rate.getTierThreshold());
-            data.println();
-            data.println("\t\tMax Curtailment: " + rate.getMaxCurtailment());
-
+            if (rate.getTierThreshold() != 0.0)
+            {
+                data.println("\t\tTiered Threshold: " + rate.getTierThreshold());
+                data.println();
+            }
+            if (rate.getMaxCurtailment() != 0.0)
+            {
+                data.println("\t\tMax Curtailment: " + rate.getMaxCurtailment());
+            }
         }
         data.println();
     }
