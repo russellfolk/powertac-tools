@@ -1,12 +1,12 @@
 #!/usr/local/bin/bash
 
 # Environment Variables set these to your correct settings
-export GAME_LOG="../../game_logs"
+export GAME_LOGS="../../game_logs"
 declare -a PACKAGES=("example" "porag" "russell")
 
 export ITERATION=".runiter"
 export ITER_NUM=0
-export OUTPUT_FILE="analysis_output_"
+export OUTPUT_FILE="analysis_output"
 export INPUT_FILE=""
 export CLASS_PATH="src/main/java/org/powertac/logtool"
 export CLASS_NAME="org.powertac.logtool"
@@ -24,7 +24,7 @@ else
 	# set up the output file...
 	if [ $# -eq 2 ]; then
 		if [ -f $ITERATION ]; then
-			read $ITER_NUM < $ITERATION
+			ITER_NUM=$(<${ITERATION})
 		fi
 		OUTPUT_FILE="${OUTPUT_FILE}_${ITER_NUM}.csv"
 		((ITER_NUM++))
@@ -34,7 +34,7 @@ else
 	fi
 
 	# set up the input file
-	INPUT_FILE=$2
+	INPUT_FILE="${GAME_LOGS}/${2}"
 
 	# set up the class file
 	for i in "${PACKAGES[@]}";
