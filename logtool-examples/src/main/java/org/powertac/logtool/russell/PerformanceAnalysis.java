@@ -16,9 +16,9 @@ import java.util.HashMap;
 /**
  * Created by russell on 8/24/16.
  */
-public class LumpPerformanceAnalysis extends LogtoolContext implements Analyzer
+public class PerformanceAnalysis extends LogtoolContext implements Analyzer
 {
-    static private Logger log = Logger.getLogger(LumpPerformanceAnalysis.class.getName());
+    static private Logger log = Logger.getLogger(PerformanceAnalysis.class.getName());
 
     // data output file
     private PrintWriter recordEuro;
@@ -202,7 +202,7 @@ public class LumpPerformanceAnalysis extends LogtoolContext implements Analyzer
      */
     public static void main(String[] args) {
         System.out.println("Starting Analysis");
-        new LumpPerformanceAnalysis().cli(args);
+        new PerformanceAnalysis().cli(args);
     }
 
     /**
