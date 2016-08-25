@@ -29,10 +29,10 @@ import org.powertac.common.spring.SpringApplicationContext;
 import org.powertac.logtool.LogtoolContext;
 import org.powertac.logtool.common.DomainObjectReader;
 import org.powertac.logtool.common.NewObjectListener;
-import org.powertac.logtool.example.avgClearing.MarketTransactionHandler;
-import org.powertac.logtool.example.avgClearing.OrderbookHandler;
-import org.powertac.logtool.example.avgClearing.TimeslotHandler;
-import org.powertac.logtool.example.avgClearing.TimeslotUpdateHandler;
+import org.powertac.logtool.porag.avgClearing.MarketTransactionHandler;
+import org.powertac.logtool.porag.avgClearing.OrderbookHandler;
+import org.powertac.logtool.porag.avgClearing.TimeslotHandler;
+import org.powertac.logtool.porag.avgClearing.TimeslotUpdateHandler;
 import org.powertac.logtool.ifc.Analyzer;
 import org.powertac.common.Timeslot;
 
