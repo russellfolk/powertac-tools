@@ -86,6 +86,18 @@ public class BrokerMetrics
         }
         public String getValues(ValueType v) { return getValues(v, false); }
 
+        public double getTotal(ValueType v)
+        {
+            switch (v)
+            {
+                case ENERGY:
+                    return energyIn + energyOut;
+                case MONEY:
+                    return income + expense;
+            }
+            return 0;
+        }
+
         public String getName() { return name; }
 
         private double norm(double n)
@@ -253,6 +265,30 @@ public class BrokerMetrics
         result += bank.getValues(v, normalize) + ",";
         result += distribution.getValues(v, normalize) + ",";
         result += capacity.getValues(v, normalize) + ",";
+        return result;
+    }
+
+    public double getTotal(ValueType v)
+    {
+        double result = 0;
+        result += tariffConsumption.getTotal(v);
+        result += tariffInterruptible.getTotal(v);
+        result += tariffElectricVehicle.getTotal(v);
+        result += tariffThermalStorage.getTotal(v);
+        result += tariffBatteryStorage.getTotal(v);
+        result += tariffStorage.getTotal(v);
+        result += tariffProduction.getTotal(v);
+        result += tariffWind.getTotal(v);
+        result += tariffSolar.getTotal(v);
+        result += tariffRiver.getTotal(v);
+        result += tariffPumped.getTotal(v);
+        result += tariffFossil.getTotal(v);
+        result += tariffCHP.getTotal(v);
+        result += wholesale.getTotal(v);
+        result += balancing.getTotal(v);
+        result += bank.getTotal(v);
+        result += distribution.getTotal(v);
+        result += capacity.getTotal(v);
         return result;
     }
 }
