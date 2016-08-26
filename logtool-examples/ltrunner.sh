@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 
 # Environment Variables set these to your correct settings
 export GAME_LOGS="../../game_logs"
