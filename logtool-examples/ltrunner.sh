@@ -77,5 +77,6 @@ mvn exec:exec -Dexec.args="${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}"
 # clean up the running directory
 # put the analysis where specified above
 mv $OUTPUT_FILE $LOG_OUTPUT
+mv "*.csv" $LOG_OUTPUT
 # remove the temp input file
 rm "${INPUT_FILE}"
