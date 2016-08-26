@@ -221,50 +221,68 @@ public class BrokerMetrics
         capacity.updateValues(amount);
     }
 
-    public String getHeader()
+    public String getPrintHeader()
     {
         String result = "";
-        result += tariffConsumption.getName() + ",";
-        result += tariffInterruptible.getName() + ",";
-        result += tariffElectricVehicle.getName() + ",";
-        result += tariffThermalStorage.getName() + ",";
-        result += tariffBatteryStorage.getName() + ",";
-        result += tariffStorage.getName() + ",";
-        result += tariffProduction.getName() + ",";
-        result += tariffWind.getName() + ",";
-        result += tariffSolar.getName() + ",";
-        result += tariffRiver.getName() + ",";
-        result += tariffPumped.getName() + ",";
-        result += tariffFossil.getName() + ",";
-        result += tariffCHP.getName() + ",";
-        result += wholesale.getName() + ",";
-        result += balancing.getName() + ",";
-        result += bank.getName() + ",";
-        result += distribution.getName() + ",";
-        result += capacity.getName() + ",";
+        result += tariffConsumption.getName() + " Gains,";
+        result += tariffConsumption.getName() + " Losses,";
+        result += tariffInterruptible.getName() + " Gains,";
+        result += tariffInterruptible.getName() + " Losses,";
+        result += tariffElectricVehicle.getName() + " Gains,";
+        result += tariffElectricVehicle.getName() + " Losses,";
+        result += tariffThermalStorage.getName() + " Gains,";
+        result += tariffThermalStorage.getName() + " Losses,";
+        result += tariffBatteryStorage.getName() + " Gains,";
+        result += tariffBatteryStorage.getName() + " Losses,";
+        result += tariffStorage.getName() + " Gains,";
+        result += tariffStorage.getName() + " Losses,";
+        result += tariffProduction.getName() + " Gains,";
+        result += tariffProduction.getName() + " Losses,";
+        result += tariffWind.getName() + " Gains,";
+        result += tariffWind.getName() + " Losses,";
+        result += tariffSolar.getName() + " Gains,";
+        result += tariffSolar.getName() + " Losses,";
+        result += tariffRiver.getName() + " Gains,";
+        result += tariffRiver.getName() + " Losses,";
+        result += tariffPumped.getName() + " Gains,";
+        result += tariffPumped.getName() + " Losses,";
+        result += tariffFossil.getName() + " Gains,";
+        result += tariffFossil.getName() + " Losses,";
+        result += tariffCHP.getName() + " Gains,";
+        result += tariffCHP.getName() + " Losses,";
+        result += wholesale.getName() + " Gains,";
+        result += wholesale.getName() + " Losses,";
+        result += balancing.getName() + " Gains,";
+        result += balancing.getName() + " Losses,";
+        result += bank.getName() + " Gains,";
+        result += bank.getName() + " Losses,";
+        result += distribution.getName() + " Gains,";
+        result += distribution.getName() + " Losses,";
+        result += capacity.getName() + " Gains,";
+        result += capacity.getName() + " Losses,";
         return result;
     }
     public String getBrokerMetrics(boolean normalize, ValueType v)
     {
         String result = "";
-        result += tariffConsumption.getValues(v, normalize) + ",";
-        result += tariffInterruptible.getValues(v, normalize) + ",";
-        result += tariffElectricVehicle.getValues(v, normalize) + ",";
-        result += tariffThermalStorage.getValues(v, normalize) + ",";
-        result += tariffBatteryStorage.getValues(v, normalize) + ",";
-        result += tariffStorage.getValues(v, normalize) + ",";
-        result += tariffProduction.getValues(v, normalize) + ",";
-        result += tariffWind.getValues(v, normalize) + ",";
-        result += tariffSolar.getValues(v, normalize) + ",";
-        result += tariffRiver.getValues(v, normalize) + ",";
-        result += tariffPumped.getValues(v, normalize) + ",";
-        result += tariffFossil.getValues(v, normalize) + ",";
-        result += tariffCHP.getValues(v, normalize) + ",";
-        result += wholesale.getValues(v, normalize) + ",";
-        result += balancing.getValues(v, normalize) + ",";
-        result += bank.getValues(v, normalize) + ",";
-        result += distribution.getValues(v, normalize) + ",";
-        result += capacity.getValues(v, normalize) + ",";
+        result += tariffConsumption.getValues(v, normalize);
+        result += tariffInterruptible.getValues(v, normalize);
+        result += tariffElectricVehicle.getValues(v, normalize);
+        result += tariffThermalStorage.getValues(v, normalize);
+        result += tariffBatteryStorage.getValues(v, normalize);
+        result += tariffStorage.getValues(v, normalize);
+        result += tariffProduction.getValues(v, normalize);
+        result += tariffWind.getValues(v, normalize);
+        result += tariffSolar.getValues(v, normalize);
+        result += tariffRiver.getValues(v, normalize);
+        result += tariffPumped.getValues(v, normalize);
+        result += tariffFossil.getValues(v, normalize);
+        result += tariffCHP.getValues(v, normalize);
+        result += wholesale.getValues(v, normalize);
+        result += balancing.getValues(v, normalize);
+        result += bank.getValues(v, normalize);
+        result += distribution.getValues(v, normalize);
+        result += capacity.getValues(v, normalize);
         return result;
     }
 
