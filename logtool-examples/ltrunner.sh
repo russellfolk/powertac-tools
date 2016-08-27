@@ -76,7 +76,7 @@ mvn exec:exec -Dexec.args="${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}"
 
 # clean up the running directory
 # put the analysis where specified above
-if [ -f $OUTPUT_FILE ]
+if [ -f $OUTPUT_FILE ]; then
 	mv $OUTPUT_FILE $LOG_OUTPUT
 fi
 find . -name '*.csv' -exec mv {} ../../log_analysis/ \;
