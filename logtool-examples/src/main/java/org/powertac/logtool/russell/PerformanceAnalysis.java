@@ -11,6 +11,7 @@ import org.powertac.logtool.ifc.Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -30,171 +31,9 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
     private String filenameEuroNorm = "recordEuro.txt";
     private String filenameEnergyNorm = "recordEnergy.txt";
 
-
-    /**
-     * Structure that holds the information of a single brokers performance
-     */
-    private class PerformanceByCategory {
-        private double wholesaleGainEnergy;
-        private double wholesaleGainEuros;
-        private double wholesaleLossEnergy;
-        private double wholesaleLossEuros;
-        private double tariffGainEnergy;
-        private double tariffGainEuros;
-        private double tariffLossEnergy;
-        private double tariffLossEuros;
-        private double tariffPeriodicEuros;
-        private double balanceGainEnergy;
-        private double balanceGainEuros;
-        private double balanceLossEnergy;
-        private double balanceLossEuros;
-        private double capacityEnergy;
-        private double capacityEuros;
-        private double distributionEnergy;
-        private double distributionEuros;
-
-        private PerformanceByCategory()
-        {
-            wholesaleGainEnergy = 0.0;
-            wholesaleGainEuros = 0.0;
-            wholesaleLossEnergy = 0.0;
-            wholesaleLossEuros = 0.0;
-            tariffGainEnergy = 0.0;
-            tariffGainEuros = 0.0;
-            tariffLossEnergy = 0.0;
-            tariffLossEuros = 0.0;
-
-            balanceGainEnergy = 0.0;
-            balanceGainEuros = 0.0;
-            balanceLossEnergy = 0.0;
-            balanceLossEuros = 0.0;
-
-            capacityEnergy = 0.0;
-            capacityEuros = 0.0;
-            distributionEnergy = 0.0;
-            distributionEuros = 0.0;
-        }
-
-        private void updateBalancingGain(double amount, double money)
-        {
-            balanceGainEnergy += amount;
-            balanceGainEuros += money;
-        }
-
-        private void updateBalancingLoss(double amount, double money)
-        {
-            balanceLossEnergy += amount;
-            balanceLossEuros += money;
-        }
-
-        private void updateWholesaleGain(double amount, double money)
-        {
-            wholesaleGainEnergy += (amount * 1000);
-            wholesaleGainEuros += money;
-        }
-
-        private void updateWholesaleLoss(double amount, double money)
-        {
-            wholesaleLossEnergy += (amount * 1000);
-            wholesaleLossEuros += money;
-        }
-
-        private void updateTariffConsumption(double amount, double money)
-        {
-            tariffGainEnergy += amount;
-            tariffGainEuros += money;
-        }
-
-        private void updateTariffPeriodic(double money)
-        {
-            tariffPeriodicEuros += money;
-        }
-
-        private void updateTariffProduction(double amount, double money)
-        {
-            tariffLossEnergy += amount;
-            tariffLossEuros += money;
-        }
-
-        private void updateCapacity(double amount, double money)
-        {
-            capacityEnergy += amount;
-            capacityEuros += money;
-        }
-
-        private void updateDistribution(double amount, double money)
-        {
-            distributionEnergy += amount;
-            distributionEuros += money;
-        }
-
-        private String getPerformanceEuros()
-        {
-            String euros = "";
-            euros += tariffGainEuros + ",";
-            euros += tariffPeriodicEuros + ",";
-            euros += tariffLossEuros + ",";
-            euros += wholesaleGainEuros + ",";
-            euros += wholesaleLossEuros + ",";
-            euros += balanceGainEuros + ",";
-            euros += balanceLossEuros + ",";
-            euros += capacityEuros + ",";
-            euros += distributionEuros + ",";
-            return euros;
-        }
-
-        private String getPerformanceEnergy()
-        {
-            String energy = "";
-            energy += tariffGainEnergy + ",";
-            energy += tariffLossEnergy + ",";
-            energy += wholesaleGainEnergy + ",";
-            energy += wholesaleLossEnergy + ",";
-            energy += balanceGainEnergy + ",";
-            energy += balanceLossEnergy + ",";
-            return energy;
-        }
-
-        private String getNormalizedEuros()
-        {
-            String euros = "";
-            euros += Math.log(tariffGainEuros) + ",";
-            euros += Math.log(tariffPeriodicEuros) + ",";
-            euros += Math.log(tariffLossEuros) + ",";
-            euros += Math.log(wholesaleGainEuros) + ",";
-            euros += Math.log(wholesaleLossEuros) + ",";
-            euros += Math.log(balanceGainEuros) + ",";
-            euros += Math.log(balanceLossEuros) + ",";
-            euros += Math.log(capacityEuros) + ",";
-            euros += Math.log(distributionEuros) + ",";
-            return euros;
-        }
-
-        private String getNormalizedEnergy()
-        {
-            String energy = "";
-            energy += normalize(tariffGainEnergy) + ",";
-            energy += normalize(tariffLossEnergy) + ",";
-            energy += normalize(wholesaleGainEnergy) + ",";
-            energy += normalize(wholesaleLossEnergy) + ",";
-            energy += normalize(balanceGainEnergy) + ",";
-            energy += normalize(balanceLossEnergy) + ",";
-            return energy;
-        }
-
-        private double normalize(double n)
-        {
-            if (n > 0.0)
-                return Math.log(n);
-            else if (n < 0.0)
-                return -Math.log(-n);
-            else
-                return 0.0;
-        }
-    }
-
     // Holds the entire performance
-    private HashMap<Broker, PerformanceByCategory> performance;
+    private HashMap<Broker, BrokerMetrics> performance;
+    private ArrayList<Broker> brokers;
 
     /**
      * Main method just creates an instance and passes command-line args to its
@@ -236,6 +75,7 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         dor.registerNewObjectListener(new MarketTxHandler(), MarketTransaction.class);
         dor.registerNewObjectListener(new CapacityTxHandler(), CapacityTransaction.class);
         dor.registerNewObjectListener(new DistributionTxHandler(), DistributionTransaction.class);
+        dor.registerNewObjectListener(new BankTxHandler(), BankTransaction.class);
         try {
             recordEuro = new PrintWriter(new File(filenameEuro));
             recordEuroNorm = new PrintWriter(new File(filenameEuroNorm));
@@ -248,54 +88,51 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
             log.error("Cannot open file " + filenameEnergy);
             log.error("Cannot open file " + filenameEnergyNorm);
         }
+        brokers = new ArrayList<>();
         performance = new HashMap<>();
     }
 
     @Override
     public void report ()
     {
-        printOutput(recordEnergy, "kWh", false);
-        printOutput(recordEnergyNorm, "kWh", true);
-        printOutput(recordEuro, "$", false);
-        printOutput(recordEuroNorm, "$", true);
+        printOutput(recordEnergy, false, BrokerMetrics.ValueType.ENERGY);
+        printOutput(recordEnergyNorm, true, BrokerMetrics.ValueType.ENERGY);
+        printOutput(recordEuro, false, BrokerMetrics.ValueType.MONEY);
+        printOutput(recordEuroNorm, true, BrokerMetrics.ValueType.MONEY);
     }
 
-    private void printOutput(PrintWriter pw, String u, boolean norm)
+    private void printOutput(PrintWriter pw, boolean normalize, BrokerMetrics.ValueType v)
     {
-        if (norm)
-            u = "log_10("+u+")";
-        pw.print("Broker Name,");
-        pw.print("Tariff Gains ("+u+"),");
-        if (u.equals("$"))
-            pw.print("Tariff Periodic Gains ("+u+"),");
-        pw.print("Tariff Losses ("+u+"),");
-        pw.print("Wholesale Gains ("+u+"),");
-        pw.print("Wholesale Losses ("+u+"),");
-        pw.print("Balancing Gains ("+u+"),");
-        pw.print("Balancing Losses ("+u+"),");
-        if (u.equals("$"))
+        // Print first line explanation...
+        if (normalize)
+            pw.print("Normalized (log_10) ");
+        switch (v)
         {
-            pw.print("Capacity Losses (" + u + "),");
-            pw.print("Distribution Losses (" + u + "),");
+            case ENERGY:
+                pw.print("Energy");
+                break;
+            case MONEY:
+                pw.print("Monetary");
+                break;
         }
+        pw.print(" Statistics for Brokers");
+
+        int numEntries = 1 + 18 * 2 + 1;
+        for (int i = 0; i < numEntries; ++i)
+            pw.print(",");
         pw.println();
 
+        // print header row
+        pw.print("Broker Name,");
+        pw.print("Ending Balance,");
+        pw.println(performance.get(brokers.get(0)).getPrintHeader());
+
+        // print statistics per broker...
         for (Broker broker : performance.keySet())
         {
-            pw.print(broker + ",");
-            String results;
-            if (u.equals("$"))
-                if (norm)
-                    results = performance.get(broker).getNormalizedEuros();
-                else
-                    results = performance.get(broker).getPerformanceEuros();
-            else
-            if (norm)
-                results = performance.get(broker).getNormalizedEnergy();
-            else
-                results = performance.get(broker).getPerformanceEnergy();
-            pw.print(results);
-            pw.println();
+            pw.print(broker.getUsername() + ",");
+            pw.print(performance.get(broker).getTotal(v) + ",");
+            pw.println(performance.get(broker).getBrokerMetrics(normalize, v));
         }
         pw.close();
     }
@@ -306,7 +143,11 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         public void handleNewObject(Object thing)
         {
             Broker broker = (Broker) thing;
-            performance.put(broker, new PerformanceByCategory());
+            if (!broker.getUsername().toLowerCase().equals("lmp"))
+            {
+                brokers.add(broker);
+                performance.put(broker, new BrokerMetrics());
+            }
         }
     }
 
@@ -317,36 +158,9 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         {
             TariffTransaction tx = (TariffTransaction)thing;
             Broker broker = tx.getBroker();
-            double amount = tx.getKWh();
-            double money = tx.getCharge();
-
-            // only concerned with consumption / production
-            PerformanceByCategory perf = performance.get(broker);
-            if (tx.getTxType() == TariffTransaction.Type.PRODUCE)
-                perf.updateTariffProduction(amount, money);
-            else if (tx.getTxType() == TariffTransaction.Type.CONSUME)
-                perf.updateTariffConsumption(amount, money);
-            else if (tx.getTxType() == TariffTransaction.Type.PERIODIC)
-                perf.updateTariffPeriodic(money);
-            performance.put(broker, perf);
-        }
-    }
-
-    private class BalancingTxHandler implements NewObjectListener
-    {
-        @Override
-        public void handleNewObject (Object thing)
-        {
-            BalancingTransaction tx = (BalancingTransaction)thing;
-            Broker broker = tx.getBroker();
-            double amount = tx.getKWh();
-            double money = tx.getCharge();
-            PerformanceByCategory perf = performance.get(broker);
-            if (money < 0.0)
-                perf.updateBalancingLoss(amount, money);
-            else
-                perf.updateBalancingGain(amount, money);
-            performance.put(broker, perf);
+            BrokerMetrics metrics = performance.get(broker);
+            metrics.updateTariff(tx.getTariffSpec().getPowerType(), tx.getKWh(), tx.getCharge());
+            performance.put(broker, metrics);
         }
     }
 
@@ -357,18 +171,26 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         {
             MarketTransaction tx = (MarketTransaction)thing;
             Broker broker = tx.getBroker();
-            double amount = tx.getMWh();
-            double money = tx.getPrice();
             // check if a valid broker...
-            if (performance.containsKey(broker))
+            if (performance.containsKey(broker) && !broker.getUsername().toLowerCase().equals("lmp"))
             {
-                PerformanceByCategory perf = performance.get(broker);
-                if (money < 0.0)
-                    perf.updateWholesaleLoss(amount, money);
-                else
-                    perf.updateWholesaleGain(amount, money);
-                performance.put(broker, perf);
+                BrokerMetrics metrics = performance.get(broker);
+                metrics.updateWholesale(tx.getMWh(), tx.getPrice());
+                performance.put(broker, metrics);
             }
+        }
+    }
+
+    private class BalancingTxHandler implements NewObjectListener
+    {
+        @Override
+        public void handleNewObject (Object thing)
+        {
+            BalancingTransaction tx = (BalancingTransaction)thing;
+            Broker broker = tx.getBroker();
+            BrokerMetrics metrics = performance.get(broker);
+            metrics.updateBalancing(tx.getKWh(), tx.getCharge());
+            performance.put(broker, metrics);
         }
     }
 
@@ -379,11 +201,9 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         {
             DistributionTransaction tx = (DistributionTransaction)thing;
             Broker broker = tx.getBroker();
-            double amount = tx.getKWh();
-            double money = tx.getCharge();
-            PerformanceByCategory perf = performance.get(broker);
-            perf.updateDistribution(amount, money);
-            performance.put(broker, perf);
+            BrokerMetrics metrics = performance.get(broker);
+            metrics.updateDistribution(tx.getCharge());
+            performance.put(broker, metrics);
         }
     }
 
@@ -394,11 +214,25 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         {
             CapacityTransaction tx = (CapacityTransaction)thing;
             Broker broker = tx.getBroker();
-            double amount = tx.getKWh();
-            double money = tx.getCharge();
-            PerformanceByCategory perf = performance.get(broker);
-            perf.updateCapacity(amount, money);
-            performance.put(broker, perf);
+            BrokerMetrics metrics = performance.get(broker);
+            metrics.updateCapacity(tx.getCharge());
+            performance.put(broker, metrics);
+        }
+    }
+
+    private class BankTxHandler implements NewObjectListener
+    {
+        @Override
+        public void handleNewObject(Object thing)
+        {
+            BankTransaction tx = (BankTransaction)thing;
+            Broker broker = tx.getBroker();
+            if (performance.containsKey(broker) && !broker.getUsername().toLowerCase().equals("lmp"))
+            {
+                BrokerMetrics metrics = performance.get(broker);
+                metrics.updateBank(tx.getAmount());
+                performance.put(broker, metrics);
+            }
         }
     }
 }
