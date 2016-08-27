@@ -195,10 +195,10 @@ public class BrokerMetrics
 
     public void updateWholesale(double energy, double amount)
     {
-        energy *= 1000; // normalize for kWh
-        amount *= energy; // given in terms of price/MWh
-
-        wholesale.updateValues(energy, amount);
+        // need to convert energy from MWh to kWh
+        // need to get net amount of money $ * MWh
+        // need to not cancel out any negatives...
+        wholesale.updateValues(energy * 1000, amount * Math.abs(energy));
     }
 
     public void updateBalancing(double energy, double amount)
