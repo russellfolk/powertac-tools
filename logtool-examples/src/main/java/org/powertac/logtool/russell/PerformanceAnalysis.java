@@ -30,6 +30,8 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
     private PrintWriter recordEnergyNorm;
     private String filenameEuroNorm = "recordEuro.txt";
     private String filenameEnergyNorm = "recordEnergy.txt";
+    private PrintWriter recordPer;
+    private String filenamePer = "recordPer.txt";
 
     // Holds the entire performance
     private HashMap<Broker, BrokerMetrics> performance;
@@ -56,6 +58,7 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         filenameEuroNorm = "norm_euro_" + args[1];
         filenameEnergy = "energy_" + args[1];
         filenameEnergyNorm = "energy_norm_" + args[1];
+        filenamePer = "per_" + args[1];
         super.cli(args[0], this);
     }
 
@@ -81,12 +84,14 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
             recordEuroNorm = new PrintWriter(new File(filenameEuroNorm));
             recordEnergy = new PrintWriter(new File(filenameEnergy));
             recordEnergyNorm = new PrintWriter(new File(filenameEnergyNorm));
+            recordPer = new PrintWriter(new File(filenamePer));
         }
         catch (FileNotFoundException e) {
             log.error("Cannot open file " + filenameEuro);
             log.error("Cannot open file " + filenameEuroNorm);
             log.error("Cannot open file " + filenameEnergy);
             log.error("Cannot open file " + filenameEnergyNorm);
+            log.error("Cannot open file" + filenamePer);
         }
         brokers = new ArrayList<>();
         performance = new HashMap<>();
@@ -99,6 +104,7 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
         printOutput(recordEnergyNorm, true, BrokerMetrics.ValueType.ENERGY);
         printOutput(recordEuro, false, BrokerMetrics.ValueType.MONEY);
         printOutput(recordEuroNorm, true, BrokerMetrics.ValueType.MONEY);
+        printOutput(recordPer);
     }
 
     private void printOutput(PrintWriter pw, boolean normalize, BrokerMetrics.ValueType v)
@@ -133,6 +139,30 @@ public class PerformanceAnalysis extends LogtoolContext implements Analyzer
             pw.print(broker.getUsername() + ",");
             pw.print(performance.get(broker).getTotal(v) + ",");
             pw.println(performance.get(broker).getBrokerMetrics(normalize, v));
+        }
+        pw.close();
+    }
+
+    private void printOutput(PrintWriter pw)
+    {
+        pw.println("Price per kWh Statistics for Brokers");
+        int numEntries = 1 + 18 * 2 + 1;
+        for (int i = 0; i < numEntries; ++i)
+            pw.print(",");
+        pw.println();
+
+        // print header row
+        pw.print("Broker Name,");
+        pw.print("Ending Balance,");
+        pw.println(performance.get(brokers.get(0)).getPrintHeader());
+
+        // print statistics per broker...
+        for (Broker broker : performance.keySet())
+        {
+            pw.print(broker.getUsername() + ",");
+            pw.print((performance.get(broker).getTotal(BrokerMetrics.ValueType.MONEY) /
+                      performance.get(broker).getTotal(BrokerMetrics.ValueType.ENERGY)) + ",");
+            pw.println(performance.get(broker).getBrokerMetricPerkWh(true));
         }
         pw.close();
     }

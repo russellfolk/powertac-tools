@@ -86,6 +86,13 @@ public class BrokerMetrics
         }
         public String getValues(ValueType v) { return getValues(v, false); }
 
+        public String getPerValues(double divisor)
+        {
+            String result = "";
+            result += (income / divisor) + "," + (expense / divisor) + ",";
+            return result;
+        }
+
         public double getTotal(ValueType v)
         {
             switch (v)
@@ -283,6 +290,65 @@ public class BrokerMetrics
         result += bank.getValues(v, normalize);
         result += distribution.getValues(v, normalize);
         result += capacity.getValues(v, normalize);
+        return result;
+    }
+
+    public String getBrokerMetricPerkWh(boolean normalize)
+    {
+        String result = "";
+        // Calculate tariff Net
+        double netEnergyTariff = 0.0;
+        netEnergyTariff += tariffConsumption.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffInterruptible.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffElectricVehicle.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffThermalStorage.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffBatteryStorage.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffStorage.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffProduction.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffWind.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffSolar.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffRiver.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffPumped.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffFossil.getTotal(ValueType.ENERGY);
+        netEnergyTariff += tariffCHP.getTotal(ValueType.ENERGY);
+
+        // Calculate Energy Out Net
+        double netEnergyOut = 0.0;
+        netEnergyOut += tariffConsumption.energyOut;
+        netEnergyOut += tariffInterruptible.energyOut;
+        netEnergyOut += tariffElectricVehicle.energyOut;
+        netEnergyOut += tariffThermalStorage.energyOut;
+        netEnergyOut += tariffBatteryStorage.energyOut;
+        netEnergyOut += tariffStorage.energyOut;
+        netEnergyOut += tariffProduction.energyOut;
+        netEnergyOut += tariffWind.energyOut;
+        netEnergyOut += tariffSolar.energyOut;
+        netEnergyOut += tariffRiver.energyOut;
+        netEnergyOut += tariffPumped.energyOut;
+        netEnergyOut += tariffFossil.energyOut;
+        netEnergyOut += tariffCHP.energyOut;
+        netEnergyOut += wholesale.energyOut;
+        netEnergyOut += balancing.energyOut;
+        netEnergyOut *= -1; // needs to be positive...
+
+        result += tariffConsumption.getPerValues(netEnergyOut);
+        result += tariffInterruptible.getPerValues(netEnergyOut);
+        result += tariffElectricVehicle.getPerValues(netEnergyOut);
+        result += tariffThermalStorage.getPerValues(netEnergyOut);
+        result += tariffBatteryStorage.getPerValues(netEnergyOut);
+        result += tariffStorage.getPerValues(netEnergyOut);
+        result += tariffProduction.getPerValues(netEnergyOut);
+        result += tariffWind.getPerValues(netEnergyOut);
+        result += tariffSolar.getPerValues(netEnergyOut);
+        result += tariffRiver.getPerValues(netEnergyOut);
+        result += tariffPumped.getPerValues(netEnergyOut);
+        result += tariffFossil.getPerValues(netEnergyOut);
+        result += tariffCHP.getPerValues(netEnergyOut);
+        result += wholesale.getPerValues(wholesale.energyIn + wholesale.energyOut);
+        result += balancing.getPerValues(balancing.energyIn + balancing.energyOut);
+        result += bank.getPerValues(netEnergyOut);
+        result += distribution.getPerValues(netEnergyOut);
+        result += capacity.getPerValues(netEnergyTariff);
         return result;
     }
 
