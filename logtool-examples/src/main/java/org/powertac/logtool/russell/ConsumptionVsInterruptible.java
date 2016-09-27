@@ -171,7 +171,7 @@ public class ConsumptionVsInterruptible
                         pop = -tx.getCustomerCount();
                 }
                 if (tx.getTxType() == TariffTransaction.Type.CONSUME)
-                    egy = tx.getKWh();
+                    egy = Math.abs(tx.getKWh());
                 customerCounts.put(broker, customerCounts.get(broker) + pop);
                 energyCounts.put(broker, energyCounts.get(broker) + egy);
             }
