@@ -85,8 +85,8 @@ fi
 mvn clean test
 
 # run the script
-echo "mvn -X exec:exec -Dexec.args=\"${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}\""
-mvn -X exec:exec -Dexec.args="${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}"
+echo "mvn exec:exec -Dexec.args=\"${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}\""
+mvn exec:exec -Dexec.args="${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}"
 
 # clean up the running directory
 # put the analysis where specified above
