@@ -14,9 +14,11 @@ export SOURCE_PATH="src/main/java/org/powertac/logtool"
 export CLASS_NAME="org.powertac.logtool"
 export CLASS_FILE=""
 
-# handle tar.gz
+# handle compressed tars...
 export IS_TGZ=false
-export INPUT_EXT=""
+export IS_TBZ=false
+export CHECK_GZ=""
+export CHECK_BZ=""
 
 # Check for the right number of inputs...
 if [ $# -lt 2 ]; then
@@ -40,13 +42,22 @@ else
 
 	# set up the input file (we need to copy it to the running dir to work best...)
 	# first we need to check for a tgz file
-	INPUT_EXT=`expr "${2}" : '.*\(.tar.gz\)'`
-	if [ $INPUT_EXT ]; then
+	CHECK_GZ=`expr "${2}" : '.*\(.tar.gz\)'`
+	CHECK_BZ=`expr "${2}" : '.*\(.tar.bz\)'`
+	if [ $CHECK_GZ ]; then
 		IS_TGZ=true
 		# get the file name for the actual log.state
 		export FILE_IN_QUESTION=`tar ztf ${GAME_LOGS}/${2} | grep -v 'init.state' | grep '\.state$'`
 		# untar only that file, don't keep the log/ directory
 		tar xzf ${GAME_LOGS}/${2} -C . --strip-components 1 $FILE_IN_QUESTION
+		# strip off log/ from the filename
+		INPUT_FILE="${FILE_IN_QUESTION#log/}"
+	elif [ $CHECK_BZ ]; then
+		IS_TBZ=true
+		# get the file name for the actual log.state
+		export FILE_IN_QUESTION=`tar jtf ${GAME_LOGS}/${2} | grep -v 'init.state' | grep '\.state$'`
+		# untar only that file, don't keep the log/ directory
+		tar xjf ${GAME_LOGS}/${2} -C . --strip-components 1 $FILE_IN_QUESTION
 		# strip off log/ from the filename
 		INPUT_FILE="${FILE_IN_QUESTION#log/}"
 	else
@@ -60,6 +71,8 @@ else
 		# if not specified, name the output file <input>_<analysis>.csv without keeping the extension
 		if [ "$IS_TGZ" = true ]; then
 			OUTPUT_FILE="${2%%.tar.gz}_${1}.csv"
+		elif [ "$IS_TBZ" = true ]; then
+			OUTPUT_FILE="${2%%.tar.bz}_${1}.csv"
 		else
 			OUTPUT_FILE="${2%%.state}_${1}.csv"
 		fi
@@ -72,7 +85,8 @@ fi
 mvn clean test
 
 # run the script
-mvn exec:exec -Dexec.args="${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}"
+echo "mvn -X exec:exec -Dexec.args=\"${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}\""
+mvn -X exec:exec -Dexec.args="${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}"
 
 # clean up the running directory
 # put the analysis where specified above
