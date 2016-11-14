@@ -34,7 +34,6 @@ import org.powertac.logtool.LogtoolContext;
 import org.powertac.logtool.common.DomainObjectReader;
 import org.powertac.logtool.common.NewObjectListener;
 import org.powertac.logtool.ifc.Analyzer;
-import org.powertac.util.Pair;
 import org.powertac.common.enumerations.PowerType;
 
 /**
@@ -71,7 +70,9 @@ public class ConsumptionVsInterruptible
     private PrintWriter data = null;
     private String dataFilename = "data.txt";
 
-    /**
+	private int totalPop;
+
+	/**
      * Constructor does nothing. Call setup() before reading a file to
      * get this to work.
      */
@@ -140,60 +141,68 @@ public class ConsumptionVsInterruptible
     private void summarizeTimeslot (TimeslotUpdate ts)
     {
         int currentTimeslot = ts.getFirstEnabled() - 2;
+	    double totalEnergy = 0.0;
+
+        //System.out.println("Working on timeslot " + currentTimeslot);
 
         if (null == brokers) {
+            //System.out.println("No brokers...");
             // first time through
+	        totalPop = 0;
             brokers = new ArrayList<>();
             customerCounts = new HashMap<>();
             energyCounts = new HashMap<>();
             data.print("timeslot, ");
             for (Broker broker : brokerRepo.findRetailBrokers()) {
+                //System.out.println("adding " + broker.getUsername());
                 brokers.add(broker);
                 customerCounts.put(broker, 0);
                 energyCounts.put(broker, 0.0);
-                data.print(broker.getUsername() + ", ");
-                data.print(broker.getUsername() + " kWh, ");
+                data.print(broker.getUsername() + " Subscribers, " + broker.getUsername() + " Subscriber %, ");
+                data.print(broker.getUsername() + " kWh, " + broker.getUsername() + " kWh %, ");
             }
             data.println("total customers, total kWh");
         }
 
         if (ttx.size() > 0) {
-            // there are some signups and withdraws here
+            //System.out.println("We have " + ttx.size() + " tariff transactions this timeslot.");
+            // there are some signups / withdrawals and consumption here
             for (TariffTransaction tx : ttx) {
                 Broker broker = tx.getBroker();
                 int pop = 0;
                 double egy = 0;
-                if (tx.getTariffSpec().getPowerType() == PowerType.CONSUMPTION || tx.getTariffSpec().getPowerType() == PowerType.INTERRUPTIBLE_CONSUMPTION)
+                if (tx.getTxType() == TariffTransaction.Type.SIGNUP)
+                    pop = tx.getCustomerCount();
+                else if (tx.getTxType() == TariffTransaction.Type.WITHDRAW)
+                    pop = -tx.getCustomerCount();
+                //if (tx.getTxType() == TariffTransaction.Type.)
+	            else
                 {
-                    if (tx.getTxType() == TariffTransaction.Type.SIGNUP)
-                        pop = tx.getCustomerCount();
-                    else if (tx.getTxType() == TariffTransaction.Type.WITHDRAW)
-                        pop = -tx.getCustomerCount();
+	                egy = Math.abs(tx.getKWh());
+					//System.out.println("[" + currentTimeslot + "] used energy..." + tx.getKWh() + " " + tx.getCharge());
                 }
-                if (tx.getTxType() == TariffTransaction.Type.CONSUME)
-                    egy = Math.abs(tx.getKWh());
                 customerCounts.put(broker, customerCounts.get(broker) + pop);
                 energyCounts.put(broker, energyCounts.get(broker) + egy);
+                totalEnergy += egy;
+                totalPop += pop;
             }
             // print results for this timeslot
             data.print(currentTimeslot);
             data.print(", ");
-            int sumCustomers = 0;
-            double sumEnergy = 0.0;
             for (Broker broker: brokers) {
                 int count = customerCounts.get(broker);
                 data.print(count);
-                sumCustomers += count;
                 data.print(", ");
+	            data.print((((double)count)/totalPop));
+	            data.print(", ");
                 double energy = energyCounts.get(broker);
                 data.print(energy);
-                sumEnergy += energy;
                 data.print(", ");
+	            data.print((energy/totalEnergy));
+	            data.print(", ");
             }
-            data.println(sumCustomers + ", " + sumEnergy);
+            data.println(totalPop + ", " + totalEnergy);
         }
-        for (Broker broker : energyCounts.keySet())
-            energyCounts.put(broker, 0.0);
         ttx.clear();
     }
 
@@ -205,10 +214,11 @@ public class ConsumptionVsInterruptible
         public void handleNewObject (Object thing)
         {
             TariffTransaction tx = (TariffTransaction)thing;
-            // only include SIGNUP and WITHDRAW
-            if (tx.getTxType() == TariffTransaction.Type.SIGNUP ||
-                tx.getTxType() == TariffTransaction.Type.WITHDRAW ||
-                tx.getTxType() == TariffTransaction.Type.CONSUME)
+            // only include interruptible tariffs that are signup / withdrawal and consuming
+            if (tx.getTariffSpec().getPowerType() == PowerType.INTERRUPTIBLE_CONSUMPTION &&
+            	(tx.getTxType() == TariffTransaction.Type.SIGNUP ||
+                 tx.getTxType() == TariffTransaction.Type.WITHDRAW ||
+                 tx.getTxType() == TariffTransaction.Type.CONSUME))
             {
                 ttx.add(tx);
             }
@@ -219,7 +229,6 @@ public class ConsumptionVsInterruptible
     // catch TimeslotUpdate events
     class TimeslotUpdateHandler implements NewObjectListener
     {
-
         @Override
         public void handleNewObject (Object thing)
         {
