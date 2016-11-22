@@ -55,7 +55,9 @@ else
 	elif [ $CHECK_BZ ]; then
 		IS_TBZ=true
 		# get the file name for the actual log.state
-		export FILE_IN_QUESTION=`tar jtf ${GAME_LOGS}/${2} | grep -v 'init.state' | grep '\.state$'`
+		#export FILE_IN_QUESTION=`tar jtf ${GAME_LOGS}/${2} | grep -v 'init.state' | grep '\.state$'`
+		# cluster configuration...
+		export FILE_IN_QUESTION=`tar jtf ${GAME_LOGS}/${2} | grep -v 'init.state'  | grep -v 'boot.state' | grep '\.state$'`
 		# untar only that file, don't keep the log/ directory
 		tar xjf ${GAME_LOGS}/${2} -C . --strip-components 1 $FILE_IN_QUESTION
 		# strip off log/ from the filename
