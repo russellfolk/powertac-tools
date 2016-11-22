@@ -43,7 +43,7 @@ else
 	# set up the input file (we need to copy it to the running dir to work best...)
 	# first we need to check for a tgz file
 	CHECK_GZ=`expr "${2}" : '.*\(.tar.gz\)'`
-	CHECK_BZ=`expr "${2}" : '.*\(.tar.bz\)'`
+	CHECK_BZ=`expr "${2}" : '.*\(.tar.bz2\)'`
 	if [ $CHECK_GZ ]; then
 		IS_TGZ=true
 		# get the file name for the actual log.state
@@ -82,7 +82,7 @@ else
 fi
 
 # build the package
-mvn clean test
+#mvn clean test
 
 # run the script
 echo "mvn exec:exec -Dexec.args=\"${CLASS_FILE} ${INPUT_FILE} ${OUTPUT_FILE}\""
